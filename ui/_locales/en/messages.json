@@ -286,6 +286,7 @@
     "signing": "Signing",
     "hideSmallAssetBalance": "Hide asset balances under {{sign}}{{amount}}",
     "setAsDefault": "Use Tally Ho as your default wallet",
+    "enableHopr": "Use Hopr's RPCh",
     "enableTestNetworks": "Enable test networks",
     "language": "Language",
     "bugReport": "Bug report",
