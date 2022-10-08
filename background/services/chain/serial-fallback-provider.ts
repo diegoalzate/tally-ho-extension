@@ -127,7 +127,7 @@ export default class SerialFallbackProvider extends JsonRpcProvider {
 
   // The index of the provider creator that created the current provider. Used
   // for reconnects when relevant.
-  private currentProviderIndex = 0
+  private currentProviderIndex = 1
 
   // Information on the current backoff state. This is used to ensure retries
   // and reconnects back off exponentially.
@@ -219,7 +219,7 @@ export default class SerialFallbackProvider extends JsonRpcProvider {
           // current one since we've gone through every available provider. Note
           // that this may happen over time, but we still fail the request that
           // hits the end of the list.
-          this.currentProviderIndex = 0
+          this.currentProviderIndex = 1
 
           // Reconnect, but don't wait for the connection to go through.
           this.reconnectProvider()
@@ -464,7 +464,7 @@ export default class SerialFallbackProvider extends JsonRpcProvider {
   private async reconnectProvider() {
     await this.disconnectCurrentProvider()
     if (this.currentProviderIndex >= this.providerCreators.length) {
-      this.currentProviderIndex = 0
+      this.currentProviderIndex = 1
     }
 
     logger.debug(
@@ -565,7 +565,7 @@ export default class SerialFallbackProvider extends JsonRpcProvider {
         await this.disconnectCurrentProvider()
         // only set if subscriptions are successful
         this.currentProvider = primaryProvider
-        this.currentProviderIndex = 0
+        this.currentProviderIndex = 1
       })
     })
   }
@@ -670,6 +670,41 @@ export default class SerialFallbackProvider extends JsonRpcProvider {
 export function makeSerialFallbackProvider(
   network: EVMNetwork
 ): SerialFallbackProvider {
+  // if (hopr) {
+  //   const url = "http://137.184.27.36:9001"
+  //   const
+  //   const exitRPC = network.
+  //   console.log(`${url}/?exit-provider=${exitRPC}`)
+  //   return new SerialFallbackProvider(
+  //     network,
+  //     () => new WebSocketProvider(url ?? ""),
+  //     () => new JsonRpcProvider(url)
+  //   )
+  // }
+
+  const alchemiUrl = new AlchemyProvider(
+    getNetwork(Number(network.chainID)),
+    ALCHEMY_KEY
+  ).connection.url
+
+  const RPChProviderUrl = `http://137.184.27.36:9001?exit-provider=${alchemiUrl}`
+  // const ws = "ws://137.184.27.36:9001?exit-provider=" + alchemiUrl;
+  // return new SerialFallbackProvider(
+  //   network,
+  //   () => new JsonRpcProvider(url),
+  //   () => new JsonRpcProvider(url)
+  // )
+
+  // console.log(url)
+
+  // return new SerialFallbackProvider(
+  //   network,
+  //   () => new WebSocketProvider(ws),
+  //   () => new JsonRpcProvider(url)
+  // )
+
+  logger.info("rpch provider: ", RPChProviderUrl)
+
   return new SerialFallbackProvider(
     network,
     () =>
@@ -677,6 +712,6 @@ export function makeSerialFallbackProvider(
         getNetwork(Number(network.chainID)),
         ALCHEMY_KEY
       ),
-    () => new AlchemyProvider(getNetwork(Number(network.chainID)), ALCHEMY_KEY)
+    () => new JsonRpcProvider(RPChProviderUrl)
   )
 }

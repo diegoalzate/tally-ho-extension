@@ -333,6 +333,9 @@ export default class ChainService extends BaseService<Events> {
    * provider exists.
    */
   providerForNetwork(network: EVMNetwork): SerialFallbackProvider | undefined {
+    // return new ethers.providers.JsonRpcProvider(
+    //   `${url}/?exit-provider=${connectionInfo}`
+    // ) as SerialFallbackProvider
     return USE_MAINNET_FORK
       ? this.providers.evm[ETHEREUM.chainID]
       : this.providers.evm[network.chainID]
@@ -425,7 +428,6 @@ export default class ChainService extends BaseService<Events> {
    */
   providerForNetworkOrThrow(network: EVMNetwork): SerialFallbackProvider {
     const provider = this.providerForNetwork(network)
-
     if (!provider) {
       logger.error(
         "Request received for operation on an inactive network",
@@ -1004,7 +1006,6 @@ export default class ChainService extends BaseService<Events> {
         ethersTransactionFromSignedTransaction(transaction),
         { r: transaction.r, s: transaction.s, v: transaction.v }
       )
-
       await Promise.all([
         this.providerForNetworkOrThrow(transaction.network)
           .sendTransaction(serialized)
