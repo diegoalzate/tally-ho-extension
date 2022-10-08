@@ -277,7 +277,8 @@
     "testnet": "Test Network",
     "l2": "L2 scaling solution",
     "compatibleChain": "Ethereum-compatible blockchain",
-    "connected": "Connected"
+    "connected": "Connected",
+    "hoprEnabled": "over Hopr"
   },
   "readOnly": "Read-only",
   "readOnlyNotice": "Read-only mode",
@@ -312,9 +313,9 @@
       "uriTitle": "1. Insert the RPCh URI",
       "uriDesc": "This is the node where Hopr is running.",
       "uriTextfield": "Insert the URI here",
-      "uriBtn": "Confirm",
+      "uriBtn": "Validate",
       "toggleTitle": "2. Switch the toggle",
-      "toggleDesc": "If your URI is correct, you can turn on the Hopr's RPCh toggle.",
+      "toggleDesc": "If your URI is valid, you can turn on the Hopr's RPCh toggle.",
       "ariaLabel": "Enable Hopr's RPCh"
 
     },

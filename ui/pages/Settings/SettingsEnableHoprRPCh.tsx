@@ -1,17 +1,56 @@
+import { selectEnableHoprRPCh } from "@tallyho/tally-background/redux-slices/ui"
 import React, { ReactElement, useEffect, useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
+import { useSelector } from "react-redux"
 import SharedButton from "../../components/Shared/SharedButton"
 import SharedPageHeader from "../../components/Shared/SharedPageHeader"
 import SettingsEnableHoprToggle from "./SettingsEnableHoprToggle"
 
 export default function SettingsEnableHoprRPCh(): ReactElement {
   const { t } = useTranslation()
-  const [, setSearchUri] = useState("")
+  const enableHoprRPCh = useSelector(selectEnableHoprRPCh)
+  const [searchUri, setSearchUri] = useState("")
+  const [isValidUir, setIsValidUri] = useState(false)
   const uriInput = useRef<HTMLInputElement | null>(null)
+
+  useEffect(() => {
+    const initialUri = localStorage.getItem("uriValue") || ""
+    const initialIsValidUri =
+      localStorage.getItem("isValidUri") === "true" || false
+    setSearchUri(initialUri)
+    setIsValidUri(initialIsValidUri)
+  }, [])
 
   useEffect(() => {
     uriInput.current?.focus()
   }, [uriInput])
+
+  const handleChange = (uri: string) => {
+    setSearchUri(uri)
+  }
+
+  const handleClick = (uri: string) => {
+    if (
+      uri.startsWith("http") &&
+      uri.match(
+        /(http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\\/]))?/g
+      )
+    ) {
+      setIsValidUri(true)
+      localStorage.setItem("uriValue", uri)
+      localStorage.setItem("isValidUri", "true")
+    } else {
+      setIsValidUri(false)
+      localStorage.setItem("uriValue", "")
+      localStorage.setItem("isValidUri", "false")
+    }
+  }
+
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.code === "Enter") {
+      handleClick(searchUri)
+    }
+  }
 
   return (
     <div className="standard_width_padded">
@@ -22,18 +61,18 @@ export default function SettingsEnableHoprRPCh(): ReactElement {
         <h2>{t("settings.enableHoprRPCh.uriTitle")}</h2>
         <p className="simple_text">{t("settings.enableHoprRPCh.uriDesc")}</p>
         <input
-          type="text"
+          type="url"
           ref={uriInput}
           className="uri_input"
           placeholder={t("settings.enableHoprRPCh.uriTextfield")}
-          onChange={(event) => setSearchUri(event.target.value)}
+          onChange={(event) => handleChange(event.target.value)}
+          onKeyPress={(e) => handleKeyPress(e)}
+          value={searchUri}
         />
         <SharedButton
-          type="secondary"
+          type="primary"
           size="medium"
-          onClick={() => {
-            window.open(`https://chat.tally.cash/`, "_blank")?.focus()
-          }}
+          onClick={() => handleClick(searchUri)}
         >
           {t("settings.enableHoprRPCh.uriBtn")}
         </SharedButton>
@@ -43,7 +82,7 @@ export default function SettingsEnableHoprRPCh(): ReactElement {
         <p className="simple_text remove_bottom_margin">
           {t("settings.enableHoprRPCh.toggleDesc")}
         </p>
-        <SettingsEnableHoprToggle />
+        {(enableHoprRPCh || isValidUir) && <SettingsEnableHoprToggle />}
       </section>
       <style jsx>{`
         h2 {
