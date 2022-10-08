@@ -8,8 +8,6 @@ import {
   toggleHideDust,
   selectShowTestNetworks,
   toggleTestNetworks,
-  selectEnableHoprRPCh,
-  setNewEnableHoprValue,
 } from "@tallyho/tally-background/redux-slices/ui"
 import {
   SUPPORT_ANALYTICS,
@@ -58,7 +56,6 @@ export default function Settings(): ReactElement {
   const dispatch = useDispatch()
   const hideDust = useSelector(selectHideDust)
   const defaultWallet = useSelector(selectDefaultWallet)
-  const enableHoprRPCh = useSelector(selectEnableHoprRPCh)
   const showTestNetworks = useSelector(selectShowTestNetworks)
 
   const toggleHideDustAssets = (toggleValue: boolean) => {
@@ -66,9 +63,6 @@ export default function Settings(): ReactElement {
   }
   const toggleDefaultWallet = (defaultWalletValue: boolean) => {
     dispatch(setNewDefaultWalletValue(defaultWalletValue))
-  }
-  const toggleEnableHopr = (enableHoprValue: boolean) => {
-    dispatch(setNewEnableHoprValue(enableHoprValue))
   }
 
   const toggleShowTestNetworks = (defaultWalletValue: boolean) => {
@@ -91,16 +85,6 @@ export default function Settings(): ReactElement {
       <SharedToggleButton
         onChange={(toggleValue) => toggleDefaultWallet(toggleValue)}
         value={defaultWallet}
-      />
-    ),
-  }
-
-  const enableHopr = {
-    title: t("settings.enableHopr"),
-    component: () => (
-      <SharedToggleButton
-        onChange={(toggleValue) => toggleEnableHopr(toggleValue)}
-        value={enableHoprRPCh}
       />
     ),
   }
@@ -140,6 +124,17 @@ export default function Settings(): ReactElement {
     ),
   }
 
+  const enableHopr = {
+    title: "",
+    component: () => (
+      <SettingButton
+        link="/settings/enable-hopr"
+        label={t("settings.enableHopr")}
+        ariaLabel={t("settings.enableHoprRPCh.ariaLabel")}
+      />
+    ),
+  }
+
   const dAppsSettings = {
     title: "",
     component: () => (
@@ -164,12 +159,12 @@ export default function Settings(): ReactElement {
 
   const generalList = [
     setAsDefault,
-    enableHopr,
     hideSmallAssetBalance,
     ...(SUPPORT_MULTIPLE_LANGUAGES ? [languages] : []),
     ...(SUPPORT_GOERLI ? [enableTestNetworks] : []),
     dAppsSettings,
     bugReport,
+    enableHopr,
     ...(SUPPORT_ANALYTICS ? [analytics] : []),
   ]
 
