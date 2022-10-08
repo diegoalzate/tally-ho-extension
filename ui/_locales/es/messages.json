@@ -90,7 +90,9 @@
     "joinTitle": "Únete a nuestra comunidad",
     "language": "Idioma",
     "mainMenu": "Ajustes",
-    "setAsDefault": "Usa Tally Ho como su billetera predeterminada"
+    "setAsDefault": "Usa Tally Ho como su billetera predeterminada",
+    "enableHopr": "Usa RPCh de Hopr"
+
   },
   "shared": {
     "cancelBtn": "Cancelar"

@@ -124,6 +124,17 @@ export default function Settings(): ReactElement {
     ),
   }
 
+  const enableHopr = {
+    title: "",
+    component: () => (
+      <SettingButton
+        link="/settings/enable-hopr"
+        label={t("settings.enableHopr")}
+        ariaLabel={t("settings.enableHoprRPCh.ariaLabel")}
+      />
+    ),
+  }
+
   const dAppsSettings = {
     title: "",
     component: () => (
@@ -153,6 +164,7 @@ export default function Settings(): ReactElement {
     ...(SUPPORT_GOERLI ? [enableTestNetworks] : []),
     dAppsSettings,
     bugReport,
+    enableHopr,
     ...(SUPPORT_ANALYTICS ? [analytics] : []),
   ]
 

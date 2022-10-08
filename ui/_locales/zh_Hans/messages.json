@@ -34,7 +34,9 @@
     "hideSmallAssetBalance": "在 {{sign}}{{amount}} 下隐藏资产余额",
     "language": "语言",
     "mainMenu": "设置",
-    "setAsDefault": "使用 Tally Ho 作为您的默认钱包"
+    "setAsDefault": "使用 Tally Ho 作为您的默认钱包",
+    "enableHopr": "使用 Hopr 的 RPCh"
+
   },
   "swap": {
     "error": {

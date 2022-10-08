@@ -277,7 +277,8 @@
     "testnet": "Test Network",
     "l2": "L2 scaling solution",
     "compatibleChain": "Ethereum-compatible blockchain",
-    "connected": "Connected"
+    "connected": "Connected",
+    "hoprEnabled": "over Hopr"
   },
   "readOnly": "Read-only",
   "readOnlyNotice": "Read-only mode",
@@ -286,6 +287,7 @@
     "signing": "Signing",
     "hideSmallAssetBalance": "Hide asset balances under {{sign}}{{amount}}",
     "setAsDefault": "Use Tally Ho as your default wallet",
+    "enableHopr": "Use Hopr's RPCh",
     "enableTestNetworks": "Enable test networks",
     "language": "Language",
     "bugReport": "Bug report",
@@ -305,6 +307,17 @@
       "logDesc": "To better understand your bug, we need you to export your logs.",
       "logBtn": "Export logs",
       "ariaLabel": "Open bug report"
+    },
+    "enableHoprRPCh": {
+      "title": "Use Hopr's RPCh",
+      "uriTitle": "1. Insert the RPCh URI",
+      "uriDesc": "This is the node where Hopr is running.",
+      "uriTextfield": "Insert the URI here",
+      "uriBtn": "Validate",
+      "toggleTitle": "2. Switch the toggle",
+      "toggleDesc": "If your URI is valid, you can turn on the Hopr's RPCh toggle.",
+      "ariaLabel": "Enable Hopr's RPCh"
+
     },
     "analyticsSetUp": {
       "title": "Analytics",

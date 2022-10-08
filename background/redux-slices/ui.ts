@@ -9,6 +9,7 @@ import { createBackgroundAsyncThunk } from "./utils"
 const defaultSettings = {
   hideDust: false,
   defaultWallet: false,
+  enableHopr: false,
   showTestNetworks: false,
   collectAnalytics: false,
 }
@@ -26,6 +27,7 @@ export type UIState = {
   settings: {
     hideDust: boolean
     defaultWallet: boolean
+    enableHopr: boolean
     showTestNetworks: boolean
     collectAnalytics: boolean
   }
@@ -37,6 +39,7 @@ export type UIState = {
 export type Events = {
   snackbarMessage: string
   newDefaultWalletValue: boolean
+  newEnableHoprValue: boolean
   refreshBackgroundPage: null
   newSelectedAccount: AddressOnNetwork
   userActivityEncountered: AddressOnNetwork
@@ -116,13 +119,24 @@ const uiSlice = createSlice({
     setDefaultWallet: (
       state,
       { payload: defaultWallet }: { payload: boolean }
-    ) => ({
-      ...state,
-      settings: {
-        ...state.settings,
-        defaultWallet,
-      },
-    }),
+    ) => {
+      return {
+        ...state,
+        settings: {
+          ...state.settings,
+          defaultWallet,
+        },
+      }
+    },
+    setEnableHopr: (state, { payload: enableHopr }: { payload: boolean }) => {
+      return {
+        ...state,
+        settings: {
+          ...state.settings,
+          enableHopr,
+        },
+      }
+    },
     setRouteHistoryEntries: (
       state,
       { payload: routeHistoryEntries }: { payload: Partial<Location>[] }
@@ -152,6 +166,7 @@ export const {
   clearSnackbarMessage,
   setRouteHistoryEntries,
   setSlippageTolerance,
+  setEnableHopr,
 } = uiSlice.actions
 
 export default uiSlice.reducer
@@ -163,6 +178,15 @@ export const setNewDefaultWalletValue = createBackgroundAsyncThunk(
     await emitter.emit("newDefaultWalletValue", defaultWallet)
     // Once the default value has persisted, propagate to the store.
     dispatch(uiSlice.actions.setDefaultWallet(defaultWallet))
+  }
+)
+
+export const setNewEnableHoprValue = createBackgroundAsyncThunk(
+  "ui/setNewEnableHoprValue",
+  async (enableHopr: boolean, { dispatch }) => {
+    await emitter.emit("newEnableHoprValue", enableHopr)
+    // Once the default value has persisted, propagate to the store.
+    dispatch(uiSlice.actions.setEnableHopr(enableHopr))
   }
 )
 
@@ -229,7 +253,14 @@ export const selectSnackbarMessage = createSelector(
 
 export const selectDefaultWallet = createSelector(
   selectSettings,
-  (settings) => settings?.defaultWallet
+  (settings) => {
+    return settings?.defaultWallet
+  }
+)
+
+export const selectEnableHoprRPCh = createSelector(
+  selectSettings,
+  (settings) => settings?.enableHopr
 )
 
 export const selectSlippageTolerance = createSelector(
