@@ -1,8 +1,11 @@
 import React, { ReactElement } from "react"
 import { useTranslation } from "react-i18next"
 import classNames from "classnames"
-import { useDispatch } from "react-redux"
-import { setSelectedNetwork } from "@tallyho/tally-background/redux-slices/ui"
+import { useDispatch, useSelector } from "react-redux"
+import {
+  selectEnableHoprRPCh,
+  setSelectedNetwork,
+} from "@tallyho/tally-background/redux-slices/ui"
 import { EVMNetwork } from "@tallyho/tally-background/networks"
 
 interface Props {
@@ -16,6 +19,8 @@ interface Props {
 export default function TopMenuProtocolListItem(props: Props): ReactElement {
   const { t } = useTranslation()
   const { info, isSelected, network, onSelect, isDisabled } = props
+
+  const enableHoprRPCh = useSelector(selectEnableHoprRPCh)
 
   const dispatch = useDispatch()
 
@@ -40,7 +45,12 @@ export default function TopMenuProtocolListItem(props: Props): ReactElement {
         <div className="sub_title">
           {info}
           {isSelected && (
-            <span className="status">{t("protocol.connected")}</span>
+            <>
+              <span className="status">
+                {t("protocol.connected")}{" "}
+                {enableHoprRPCh && t("protocol.hoprEnabled")}
+              </span>
+            </>
           )}
         </div>
       </div>
