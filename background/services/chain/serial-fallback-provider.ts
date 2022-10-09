@@ -2,9 +2,9 @@ import {
   AlchemyProvider,
   AlchemyWebSocketProvider,
   EventType,
-  JsonRpcProvider,
   Listener,
   WebSocketProvider,
+  JsonRpcProvider,
 } from "@ethersproject/providers"
 import { getNetwork } from "@ethersproject/networks"
 import { MINUTE, SECOND } from "../../constants"
@@ -25,7 +25,7 @@ const COOLDOWN_PERIOD = 5 * MINUTE
 // This generally results in a wait time of around 30 seconds (with a maximum time
 // of 76.5 seconds for 8 completely serial requests) before falling back since we
 // usually have multiple requests going out at once.
-const MAX_RETRIES = 8
+const MAX_RETRIES = 2
 // Wait 15 seconds between primary provider reconnect attempts.
 const PRIMARY_PROVIDER_RECONNECT_INTERVAL = 15 * SECOND
 // Wait 2 seconds after a primary provider is created before resubscribing.
@@ -161,8 +161,8 @@ export default class SerialFallbackProvider extends JsonRpcProvider {
     firstProviderCreator: () => WebSocketProvider,
     ...remainingProviderCreators: (() => JsonRpcProvider)[]
   ) {
-    const firstProvider = firstProviderCreator()
-
+    const firstProvider = remainingProviderCreators[0]()
+    logger.debug("first prov: ", firstProvider.connection)
     super(firstProvider.connection, firstProvider.network)
 
     this.currentProvider = firstProvider
@@ -194,7 +194,7 @@ export default class SerialFallbackProvider extends JsonRpcProvider {
     } catch (error) {
       // Awful, but what can ya do.
       const stringifiedError = String(error)
-
+      logger.debug("error in retry, ", error)
       if (
         stringifiedError.match(/WebSocket is already in CLOSING|bad response/)
       ) {
@@ -534,7 +534,7 @@ export default class SerialFallbackProvider extends JsonRpcProvider {
         )
         // Intentionally not awaited - This starts off a recursive reconnect loop
         // that keeps trying to reconnect until successful.
-        this.attemptToReconnectToPrimaryProvider()
+        // this.attemptToReconnectToPrimaryProvider()
       }
       return false
     }
@@ -678,5 +678,18 @@ export function makeSerialFallbackProvider(
         ALCHEMY_KEY
       ),
     () => new AlchemyProvider(getNetwork(Number(network.chainID)), ALCHEMY_KEY)
+  )
+}
+
+export function makeHoprSerialFallbackProvider(
+  network: EVMNetwork
+): SerialFallbackProvider {
+  const alchemi = new AlchemyProvider(getNetwork(Number(network.chainID)))
+  const RPChProviderUrl = `http://localhost:9001?exit-provider=${alchemi.connection.url}`
+
+  return new SerialFallbackProvider(
+    network,
+    () => new AlchemyWebSocketProvider(undefined, ""),
+    () => new JsonRpcProvider(RPChProviderUrl)
   )
 }

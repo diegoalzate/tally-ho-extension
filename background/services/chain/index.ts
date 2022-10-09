@@ -58,6 +58,7 @@ import type {
   EnrichedLegacyTransactionSignatureRequest,
 } from "../enrichment"
 import SerialFallbackProvider, {
+  makeHoprSerialFallbackProvider,
   makeSerialFallbackProvider,
 } from "./serial-fallback-provider"
 import AssetDataHelper from "./asset-data-helper"
@@ -66,7 +67,6 @@ import {
   OPTIMISM_GAS_ORACLE_ADDRESS,
 } from "./utils/optimismGasPriceOracle"
 import KeyringService from "../keyring"
-
 // How many queued transactions should be retrieved on every tx alarm, per
 // network. To get frequency, divide by the alarm period. 5 tx / 5 minutes →
 // max 1 tx/min.
@@ -267,7 +267,7 @@ export default class ChainService extends BaseService<Events> {
       evm: Object.fromEntries(
         this.supportedNetworks.map((network) => [
           network.chainID,
-          makeSerialFallbackProvider(network),
+          makeSerialFallbackProvider(network), // todo: hardcoded
         ])
       ),
     }
@@ -378,16 +378,16 @@ export default class ChainService extends BaseService<Events> {
    * Adds a supported network to list of active networks.
    */
   async startTrackingNetworkOrThrow(chainID: string): Promise<EVMNetwork> {
-    const trackedNetwork = this.trackedNetworks.find(
-      (ntwrk) => toHexChainID(ntwrk.chainID) === toHexChainID(chainID)
-    )
+    // const trackedNetwork = this.trackedNetworks.find(
+    //   (ntwrk) => toHexChainID(ntwrk.chainID) === toHexChainID(chainID)
+    // )
 
-    if (trackedNetwork) {
-      logger.warn(
-        `${trackedNetwork.name} already being tracked - no need to activate it`
-      )
-      return trackedNetwork
-    }
+    // if (trackedNetwork) {
+    //   logger.warn(
+    //     `${trackedNetwork.name} already being tracked - no need to activate it`
+    //   )
+    //   return trackedNetwork
+    // }
 
     const networkToTrack = this.supportedNetworks.find(
       (ntwrk) => toHexChainID(ntwrk.chainID) === toHexChainID(chainID)
@@ -425,9 +425,8 @@ export default class ChainService extends BaseService<Events> {
    */
   providerForNetworkOrThrow(network: EVMNetwork): SerialFallbackProvider {
     const provider = this.providerForNetwork(network)
-
     if (!provider) {
-      logger.error(
+      logger.info(
         "Request received for operation on an inactive network",
         network,
         "expected",
@@ -1004,7 +1003,6 @@ export default class ChainService extends BaseService<Events> {
         ethersTransactionFromSignedTransaction(transaction),
         { r: transaction.r, s: transaction.s, v: transaction.v }
       )
-
       await Promise.all([
         this.providerForNetworkOrThrow(transaction.network)
           .sendTransaction(serialized)
@@ -1636,5 +1634,28 @@ export default class ChainService extends BaseService<Events> {
       enrichTransactionWithReceipt(transaction, receipt),
       "alchemy"
     )
+  }
+
+  public convertProvidersToHopr = (hoprEnabled: boolean): void => {
+    if (hoprEnabled) {
+      this.providers = {
+        evm: Object.fromEntries(
+          this.supportedNetworks.map((network) => [
+            network.chainID,
+            makeHoprSerialFallbackProvider(network),
+          ])
+        ),
+      }
+      logger.info({ providers: this.providers.evm })
+    } else {
+      this.providers = {
+        evm: Object.fromEntries(
+          this.supportedNetworks.map((network) => [
+            network.chainID,
+            makeSerialFallbackProvider(network),
+          ])
+        ),
+      }
+    }
   }
 }
