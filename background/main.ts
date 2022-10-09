@@ -1104,12 +1104,12 @@ export default class Main extends BaseService<never> {
       this.store.dispatch(clearCustomGas())
     })
 
-    // uiSliceEmitter.on("newEnableHoprValue", async (hoprEnabled: boolean) => {
-    //   this.store.dispatch(
-    //     setSnackbarMessage(`${hoprEnabled ? "" : "dis"}connecting to hopr...`)
-    //   )
-    //   this.chainService.convertProvidersToHopr(hoprEnabled)
-    // })
+    uiSliceEmitter.on("newEnableHoprValue", async (hoprEnabled: boolean) => {
+      this.store.dispatch(
+        setSnackbarMessage(`${hoprEnabled ? "" : "dis"}connecting to hopr...`)
+      )
+      this.chainService.convertProvidersToHopr(hoprEnabled)
+    })
   }
 
   async connectProviderBridgeService(): Promise<void> {

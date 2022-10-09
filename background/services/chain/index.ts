@@ -58,6 +58,7 @@ import type {
   EnrichedLegacyTransactionSignatureRequest,
 } from "../enrichment"
 import SerialFallbackProvider, {
+  makeHoprSerialFallbackProvider,
   makeSerialFallbackProvider,
 } from "./serial-fallback-provider"
 import AssetDataHelper from "./asset-data-helper"
@@ -1635,26 +1636,26 @@ export default class ChainService extends BaseService<Events> {
     )
   }
 
-  // public convertProvidersToHopr = (hoprEnabled: boolean): void => {
-  //   if (hoprEnabled) {
-  //     this.providers = {
-  //       evm: Object.fromEntries(
-  //         this.supportedNetworks.map((network) => [
-  //           network.chainID,
-  //           makeHoprSerialFallbackProvider(network),
-  //         ])
-  //       ),
-  //     }
-  //     logger.info({ providers: this.providers.evm })
-  //   } else {
-  //     this.providers = {
-  //       evm: Object.fromEntries(
-  //         this.supportedNetworks.map((network) => [
-  //           network.chainID,
-  //           makeSerialFallbackProvider(network),
-  //         ])
-  //       ),
-  //     }
-  //   }
-  // }
+  public convertProvidersToHopr = (hoprEnabled: boolean): void => {
+    if (hoprEnabled) {
+      this.providers = {
+        evm: Object.fromEntries(
+          this.supportedNetworks.map((network) => [
+            network.chainID,
+            makeHoprSerialFallbackProvider(network),
+          ])
+        ),
+      }
+      logger.info({ providers: this.providers.evm })
+    } else {
+      this.providers = {
+        evm: Object.fromEntries(
+          this.supportedNetworks.map((network) => [
+            network.chainID,
+            makeSerialFallbackProvider(network),
+          ])
+        ),
+      }
+    }
+  }
 }

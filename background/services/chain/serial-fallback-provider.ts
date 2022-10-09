@@ -12,7 +12,10 @@ import logger from "../../lib/logger"
 import { AnyEVMTransaction, EVMNetwork } from "../../networks"
 import { AddressOnNetwork } from "../../accounts"
 import { transactionFromEthersTransaction } from "./utils"
-import { transactionFromAlchemyWebsocketTransaction } from "../../lib/alchemy"
+import {
+  ALCHEMY_KEY,
+  transactionFromAlchemyWebsocketTransaction,
+} from "../../lib/alchemy"
 
 // Back off by this amount as a base, exponentiated by attempts and jittered.
 const BASE_BACKOFF_MS = 150
@@ -667,18 +670,20 @@ export default class SerialFallbackProvider extends JsonRpcProvider {
 export function makeSerialFallbackProvider(
   network: EVMNetwork
 ): SerialFallbackProvider {
-  // if (hopr) {
-  //   const url = "http://137.184.27.36:9001"
-  //   const
-  //   const exitRPC = network.
-  //   console.log(`${url}/?exit-provider=${exitRPC}`)
-  //   return new SerialFallbackProvider(
-  //     network,
-  //     () => new WebSocketProvider(url ?? ""),
-  //     () => new JsonRpcProvider(url)
-  //   )
-  // }
+  return new SerialFallbackProvider(
+    network,
+    () =>
+      new AlchemyWebSocketProvider(
+        getNetwork(Number(network.chainID)),
+        ALCHEMY_KEY
+      ),
+    () => new AlchemyProvider(getNetwork(Number(network.chainID)), ALCHEMY_KEY)
+  )
+}
 
+export function makeHoprSerialFallbackProvider(
+  network: EVMNetwork
+): SerialFallbackProvider {
   const alchemi = new AlchemyProvider(getNetwork(Number(network.chainID)))
   const RPChProviderUrl = `http://localhost:9001?exit-provider=${alchemi.connection.url}`
 
@@ -688,20 +693,3 @@ export function makeSerialFallbackProvider(
     () => new JsonRpcProvider(RPChProviderUrl)
   )
 }
-
-// export function makeHoprSerialFallbackProvider(
-//   network: EVMNetwork
-// ): SerialFallbackProvider {
-//   const alchemiUrl = new AlchemyProvider(
-//     getNetwork(Number(network.chainID)),
-//     ALCHEMY_KEY
-//   ).connection.url
-//   const rpch = "http://137.184.27.36:9001"
-//   const RPChProviderUrl = `${rpch}?exit-provider=${alchemiUrl}`
-//   logger.info("rpch provider: ", RPChProviderUrl)
-//   return new SerialFallbackProvider(
-//     network,
-//     () => new AlchemyWebSocketProvider(getNetwork(Number(network.chainID)), ""),
-//     () => new JsonRpcProvider(RPChProviderUrl)
-//   )
-// }
