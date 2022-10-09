@@ -158,7 +158,7 @@ export default class SerialFallbackProvider extends JsonRpcProvider {
     firstProviderCreator: () => WebSocketProvider,
     ...remainingProviderCreators: (() => JsonRpcProvider)[]
   ) {
-    const firstProvider = firstProviderCreator()
+    const firstProvider = remainingProviderCreators[0]()
     logger.debug("first prov: ", firstProvider.connection)
     super(firstProvider.connection, firstProvider.network)
 
@@ -685,22 +685,7 @@ export function makeSerialFallbackProvider(
   return new SerialFallbackProvider(
     network,
     () => new AlchemyWebSocketProvider(undefined, ""),
-    () =>
-      new JsonRpcProvider(
-        {
-          url: RPChProviderUrl,
-          headers: {
-            Accept: "*/*",
-            "Content-Type": "application/json",
-            "Accept-Encoding": "gzip, deflate",
-            "Cache-Control": "no-cache",
-          },
-        },
-        {
-          chainId: Number(network.chainID),
-          name: network.name,
-        }
-      )
+    () => new JsonRpcProvider(RPChProviderUrl)
   )
 }
 
