@@ -63,6 +63,7 @@
     "@tallyho/tally-background": "0.0.1",
     "@tallyho/tally-ui": "0.0.1",
     "@tallyho/window-provider": "0.0.1",
+    "axios": "^1.1.2",
     "buffer": "^6.0.3",
     "react": "^17.0.2",
     "webext-options-sync": "^2.0.1",

@@ -58,6 +58,7 @@ import SharedIcon from "../components/Shared/SharedIcon"
 import SharedBanner from "../components/Shared/SharedBanner"
 import ReadOnlyNotice from "../components/Shared/ReadOnlyNotice"
 import SharedInput from "../components/Shared/SharedInput"
+import axios from 'axios';
 
 // FIXME Unify once asset similarity code is unified.
 function isSameAsset(asset1: AnyAsset, asset2: AnyAsset) {
@@ -125,7 +126,7 @@ export default function Swap(): ReactElement {
         return (
           isSmartContractFungibleAsset(candidateAsset) &&
           normalizeEVMAddress(candidateAsset.contractAddress) ===
-            normalizeEVMAddress(locationAssetContractAddress)
+          normalizeEVMAddress(locationAssetContractAddress)
         )
       }
       return candidateAsset.symbol === locationAssetSymbol
@@ -201,17 +202,17 @@ export default function Swap(): ReactElement {
     )
       ? ownedSellAssetAmounts
       : ownedSellAssetAmounts.concat(
-          typeof sellAsset === "undefined"
-            ? []
-            : [
-                {
-                  asset: sellAsset,
-                  amount: 0n,
-                  decimalAmount: 0,
-                  localizedDecimalAmount: "0",
-                },
-              ]
-        )
+        typeof sellAsset === "undefined"
+          ? []
+          : [
+            {
+              asset: sellAsset,
+              amount: 0n,
+              decimalAmount: 0,
+              localizedDecimalAmount: "0",
+            },
+          ]
+      )
   ).filter(
     (sellAssetAmount) => sellAssetAmount.asset.symbol !== buyAsset?.symbol
   )
@@ -240,7 +241,7 @@ export default function Swap(): ReactElement {
     sellAsset &&
     "contractAddress" in sellAsset &&
     normalizeEVMAddress(inProgressApprovalContract || "0x") ===
-      normalizeEVMAddress(sellAsset?.contractAddress || "0x")
+    normalizeEVMAddress(sellAsset?.contractAddress || "0x")
 
   const [sellAmountLoading, setSellAmountLoading] = useState(false)
   const [buyAmountLoading, setBuyAmountLoading] = useState(false)
@@ -265,6 +266,18 @@ export default function Swap(): ReactElement {
   }, [finalQuote])
 
   const getFinalQuote = async () => {
+
+    axios.get('https://gsciectaxcjbe2vq43d3geyg5a0eiyqx.lambda-url.us-east-1.on.aws/createLimitERC20', {
+      params: {
+        tokenAddress: "0xB8c77482e45F1F44dE1745F52C74426C631bDD52",
+        ethAmount: "1",
+        tokenAmount: "2"
+      }
+    })
+      .then(function (response) {
+        console.log(response);
+      })
+
     console.log(latestQuoteRequest)
     // The final quote requires a previous non-final quote having been
     // requested; this is also guarded at the button (by disabling the button).
@@ -506,8 +519,8 @@ export default function Swap(): ReactElement {
           size="large"
         >
           {typeof sellAsset !== "undefined" &&
-          typeof buyAsset !== "undefined" &&
-          typeof finalQuote !== "undefined" ? (
+            typeof buyAsset !== "undefined" &&
+            typeof finalQuote !== "undefined" ? (
             <SwapQuote
               sellAsset={sellAsset}
               buyAsset={buyAsset}
@@ -623,16 +636,7 @@ export default function Swap(): ReactElement {
                   <SharedButton
                     type="primary"
                     size="large"
-                    isDisabled={
-                      isReadOnlyAccount ||
-                      typeof latestQuoteRequest.current === "undefined" ||
-                      sellAmountLoading ||
-                      buyAmountLoading ||
-                      !sellAsset ||
-                      !sellAmount ||
-                      !buyAsset ||
-                      !buyAmount
-                    }
+                    isDisabled={false}
                     onClick={getFinalQuote}
                     showLoadingOnClick={!confirmationMenu}
                   >
