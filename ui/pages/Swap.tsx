@@ -57,6 +57,7 @@ import SwapRewardsCard from "../components/Swap/SwapRewardsCard"
 import SharedIcon from "../components/Shared/SharedIcon"
 import SharedBanner from "../components/Shared/SharedBanner"
 import ReadOnlyNotice from "../components/Shared/ReadOnlyNotice"
+import SharedInput from "../components/Shared/SharedInput"
 
 // FIXME Unify once asset similarity code is unified.
 function isSameAsset(asset1: AnyAsset, asset2: AnyAsset) {
@@ -264,6 +265,7 @@ export default function Swap(): ReactElement {
   }, [finalQuote])
 
   const getFinalQuote = async () => {
+    console.log(latestQuoteRequest)
     // The final quote requires a previous non-final quote having been
     // requested; this is also guarded at the button (by disabling the button).
     if (typeof latestQuoteRequest.current === "undefined") {
@@ -558,6 +560,7 @@ export default function Swap(): ReactElement {
                 selectedAsset={sellAsset}
                 isDisabled={sellAmountLoading}
                 onAssetSelect={updateSellAsset}
+                hideButton={true}
                 onAmountChange={(newAmount, error) => {
                   setSellAmount(newAmount)
                   if (typeof error === "undefined") {
@@ -585,7 +588,7 @@ export default function Swap(): ReactElement {
                     updateSwapData("buy", newAmount)
                   }
                 }}
-                label={t("swap.to")}
+                label={t("swap.priceLimit")}
               />
             </div>
             <div className="settings_wrap">
@@ -633,7 +636,7 @@ export default function Swap(): ReactElement {
                     onClick={getFinalQuote}
                     showLoadingOnClick={!confirmationMenu}
                   >
-                    {t("swap.getFinalQuote")}
+                    {t("swap.limitBuyOrder")}
                   </SharedButton>
                 )
               }

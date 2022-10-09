@@ -288,7 +288,6 @@ interface SharedAssetInputProps<AssetType extends AnyAsset> {
   disableDropdown: boolean
   showMaxButton: boolean
   isDisabled?: boolean
-  hideButton?: boolean
   onAssetSelect?: (asset: AssetType) => void
   onAmountChange?: (value: string, errorMessage: string | undefined) => void
 }
@@ -326,7 +325,6 @@ export default function SharedAssetInput<T extends AnyAsset>(
     disableDropdown,
     showMaxButton,
     isDisabled,
-    hideButton,
     onAssetSelect,
     onAmountChange,
   } = props
@@ -462,7 +460,7 @@ export default function SharedAssetInput<T extends AnyAsset>(
               asset={selectedAssetAndAmount.asset}
               toggleIsAssetMenuOpen={toggleIsAssetMenuOpen}
             />
-          ) : hideButton && (
+          ) : (
             <SharedButton
               id={`asset_selector${inputId}`}
               type="secondary"
