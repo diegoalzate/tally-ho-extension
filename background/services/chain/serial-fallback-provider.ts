@@ -2,9 +2,9 @@ import {
   AlchemyProvider,
   AlchemyWebSocketProvider,
   EventType,
-  JsonRpcProvider,
   Listener,
   WebSocketProvider,
+  JsonRpcProvider,
 } from "@ethersproject/providers"
 import { getNetwork } from "@ethersproject/networks"
 import { MINUTE, SECOND } from "../../constants"
@@ -12,10 +12,7 @@ import logger from "../../lib/logger"
 import { AnyEVMTransaction, EVMNetwork } from "../../networks"
 import { AddressOnNetwork } from "../../accounts"
 import { transactionFromEthersTransaction } from "./utils"
-import {
-  ALCHEMY_KEY,
-  transactionFromAlchemyWebsocketTransaction,
-} from "../../lib/alchemy"
+import { transactionFromAlchemyWebsocketTransaction } from "../../lib/alchemy"
 
 // Back off by this amount as a base, exponentiated by attempts and jittered.
 const BASE_BACKOFF_MS = 150
@@ -25,7 +22,7 @@ const COOLDOWN_PERIOD = 5 * MINUTE
 // This generally results in a wait time of around 30 seconds (with a maximum time
 // of 76.5 seconds for 8 completely serial requests) before falling back since we
 // usually have multiple requests going out at once.
-const MAX_RETRIES = 8
+const MAX_RETRIES = 2
 // Wait 15 seconds between primary provider reconnect attempts.
 const PRIMARY_PROVIDER_RECONNECT_INTERVAL = 15 * SECOND
 // Wait 2 seconds after a primary provider is created before resubscribing.
@@ -127,7 +124,7 @@ export default class SerialFallbackProvider extends JsonRpcProvider {
 
   // The index of the provider creator that created the current provider. Used
   // for reconnects when relevant.
-  private currentProviderIndex = 1
+  private currentProviderIndex = 0
 
   // Information on the current backoff state. This is used to ensure retries
   // and reconnects back off exponentially.
@@ -162,7 +159,7 @@ export default class SerialFallbackProvider extends JsonRpcProvider {
     ...remainingProviderCreators: (() => JsonRpcProvider)[]
   ) {
     const firstProvider = firstProviderCreator()
-
+    logger.debug("first prov: ", firstProvider.connection)
     super(firstProvider.connection, firstProvider.network)
 
     this.currentProvider = firstProvider
@@ -194,7 +191,7 @@ export default class SerialFallbackProvider extends JsonRpcProvider {
     } catch (error) {
       // Awful, but what can ya do.
       const stringifiedError = String(error)
-
+      logger.debug("error in retry, ", error)
       if (
         stringifiedError.match(/WebSocket is already in CLOSING|bad response/)
       ) {
@@ -219,7 +216,7 @@ export default class SerialFallbackProvider extends JsonRpcProvider {
           // current one since we've gone through every available provider. Note
           // that this may happen over time, but we still fail the request that
           // hits the end of the list.
-          this.currentProviderIndex = 1
+          this.currentProviderIndex = 0
 
           // Reconnect, but don't wait for the connection to go through.
           this.reconnectProvider()
@@ -464,7 +461,7 @@ export default class SerialFallbackProvider extends JsonRpcProvider {
   private async reconnectProvider() {
     await this.disconnectCurrentProvider()
     if (this.currentProviderIndex >= this.providerCreators.length) {
-      this.currentProviderIndex = 1
+      this.currentProviderIndex = 0
     }
 
     logger.debug(
@@ -534,7 +531,7 @@ export default class SerialFallbackProvider extends JsonRpcProvider {
         )
         // Intentionally not awaited - This starts off a recursive reconnect loop
         // that keeps trying to reconnect until successful.
-        this.attemptToReconnectToPrimaryProvider()
+        // this.attemptToReconnectToPrimaryProvider()
       }
       return false
     }
@@ -565,7 +562,7 @@ export default class SerialFallbackProvider extends JsonRpcProvider {
         await this.disconnectCurrentProvider()
         // only set if subscriptions are successful
         this.currentProvider = primaryProvider
-        this.currentProviderIndex = 1
+        this.currentProviderIndex = 0
       })
     })
   }
@@ -682,36 +679,44 @@ export function makeSerialFallbackProvider(
   //   )
   // }
 
-  const alchemiUrl = new AlchemyProvider(
-    getNetwork(Number(network.chainID)),
-    ALCHEMY_KEY
-  ).connection.url
-
-  const RPChProviderUrl = `http://137.184.27.36:9001?exit-provider=${alchemiUrl}`
-  // const ws = "ws://137.184.27.36:9001?exit-provider=" + alchemiUrl;
-  // return new SerialFallbackProvider(
-  //   network,
-  //   () => new JsonRpcProvider(url),
-  //   () => new JsonRpcProvider(url)
-  // )
-
-  // console.log(url)
-
-  // return new SerialFallbackProvider(
-  //   network,
-  //   () => new WebSocketProvider(ws),
-  //   () => new JsonRpcProvider(url)
-  // )
-
-  logger.info("rpch provider: ", RPChProviderUrl)
+  const alchemi = new AlchemyProvider(getNetwork(Number(network.chainID)))
+  const RPChProviderUrl = `http://localhost:9001?exit-provider=${alchemi.connection.url}`
 
   return new SerialFallbackProvider(
     network,
+    () => new AlchemyWebSocketProvider(undefined, ""),
     () =>
-      new AlchemyWebSocketProvider(
-        getNetwork(Number(network.chainID)),
-        ALCHEMY_KEY
-      ),
-    () => new JsonRpcProvider(RPChProviderUrl)
+      new JsonRpcProvider(
+        {
+          url: RPChProviderUrl,
+          headers: {
+            Accept: "*/*",
+            "Content-Type": "application/json",
+            "Accept-Encoding": "gzip, deflate",
+            "Cache-Control": "no-cache",
+          },
+        },
+        {
+          chainId: Number(network.chainID),
+          name: network.name,
+        }
+      )
   )
 }
+
+// export function makeHoprSerialFallbackProvider(
+//   network: EVMNetwork
+// ): SerialFallbackProvider {
+//   const alchemiUrl = new AlchemyProvider(
+//     getNetwork(Number(network.chainID)),
+//     ALCHEMY_KEY
+//   ).connection.url
+//   const rpch = "http://137.184.27.36:9001"
+//   const RPChProviderUrl = `${rpch}?exit-provider=${alchemiUrl}`
+//   logger.info("rpch provider: ", RPChProviderUrl)
+//   return new SerialFallbackProvider(
+//     network,
+//     () => new AlchemyWebSocketProvider(getNetwork(Number(network.chainID)), ""),
+//     () => new JsonRpcProvider(RPChProviderUrl)
+//   )
+// }
